@@ -7,8 +7,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <VisMtvApi.h>
-
 #include <common.h>
 
 class IArTracker;
@@ -50,15 +48,12 @@ namespace ee {
 		//const int kWorldSceneId = 2; // static으로 선언..
 		vzm::CameraParameters world_cam_params_;
 		vzm::SceneEnvParameters world_scn_env_params_;
+
 		// Arcball
 		int world_view_width_ = 1280;
 		int world_view_height_ = 720;
 
-		std::string path_profile_;
-		std::string path_optitrack_calib_;
-
 		glm::fmat4x4 rb2cs_ = glm::fmat4x4(1.f);
-
 		glm::fmat4x4 mat_cs2ps;
 		glm::fmat4x4 mat_ps2ss;
 		glm::fmat3x3 mat_int;

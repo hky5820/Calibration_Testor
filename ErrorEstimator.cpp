@@ -69,9 +69,7 @@ ErrorEstimator::ErrorEstimator(
 	std::string path_profile,
 	std::string path_optitrack_calib
 )
-	:camera_(new RealsenseStreamer(path_rs_configuration)),
-	path_profile_(path_profile),
-	path_optitrack_calib_(path_optitrack_calib)
+	:camera_(new RealsenseStreamer(path_rs_configuration))
 {
 	tracker_ = new IrTracker(
 					std::map<std::string, int>{
@@ -211,14 +209,15 @@ void ee::ErrorEstimator::run(){
 
 		if (calc_result_) {
 			if (double* d_os2ws = tracker_->os2wsAt(kMarker::CAMERA)) { // Camera가 Detecting이 될 때 projection을 계산한다. // 안그러면 identity mat이 rb2ws에 들어간다.
+				glm::fmat4x4 rb2ws = glm::fmat4x4(glm::make_mat4x4(d_os2ws));
+
 				// 카메라 rigid body 제외한 마커 위치
 				std::vector<glm::fvec3> testing_marker_pos;
-				glm::fmat4x4 rb2ws = glm::fmat4x4(glm::make_mat4x4(d_os2ws));
-				glm::fvec3 cam_pos = tr_pt(rb2ws, glm::fvec3(0, 0, 0));
+				glm::fvec3 cam_pos = tr_pt(rb2ws, glm::fvec3(0, 0, 0)); // cam rigid body center position
 				for (int i = 0; i < num_markers; ++i) {
 					glm::fvec3 marker_pos(marker_xyz_all[3 * i + 0], marker_xyz_all[3 * i + 1], marker_xyz_all[3 * i + 2]);
 					float dist = glm::distance(cam_pos, marker_pos);
-					if (dist > 0.15/*15cm*/)
+					if (dist > 0.15/*15cm*/) // cam rigid body center와 15cm 이내의 marker는 cam rigid body의 marker로 판별
 						testing_marker_pos.emplace_back(marker_pos);
 				}
 
@@ -238,7 +237,7 @@ void ee::ErrorEstimator::run(){
 					each_rows.at(cur_row).push_back(testing_marker_pos.at(i));
 				}
 
-				// x축Q
+				// x축
 				for (auto& r : each_rows) {
 					std::sort(r.begin(), r.end(),
 						[](const glm::fvec3& a, const glm::fvec3& b) { return a.x > b.x; });
@@ -258,13 +257,11 @@ void ee::ErrorEstimator::run(){
 			}
 		}
 
-		int i = 1; 
 		// Draw Projected (u,v) at RealSense RGB Image
 		for (int i = 0; i < projected_uv_vec.size(); i++) {
 			cv::drawMarker(camera_rgb, cv::Point(projected_uv_vec.at(i).x, projected_uv_vec.at(i).y), cv::Scalar(0, 255, 255), cv::MARKER_TILTED_CROSS, 10);
-			cv::putText(camera_rgb, std::to_string(i), cv::Point(projected_uv_vec.at(i).x, projected_uv_vec.at(i).y), 2, 1.2, cv::Scalar(255));
+			cv::putText(camera_rgb, std::to_string(i+1), cv::Point(projected_uv_vec.at(i).x, projected_uv_vec.at(i).y), 2, 1.2, cv::Scalar(255));
 		}
-			
 		
 		// Render RealSense Scene
 		cv::imshow("camera", camera_rgb);

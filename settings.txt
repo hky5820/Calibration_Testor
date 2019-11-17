@@ -1,4 +1,3 @@
 C:/Users/Hong/Desktop/[K-AR]spine_surgery/Common/data/rs_config.txt
 C:/Users/Hong/Desktop/[K-AR]spine_surgery/OptiTrack/data/board.motive
 C:/Users/Hong/Desktop/[K-AR]spine_surgery/OptiTrack/data/CalibrationResult.cal
-
